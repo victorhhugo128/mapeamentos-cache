@@ -72,21 +72,10 @@ razao = int(potencia * (11/26))  # razão que será usada para dividir os bits n
 # celula.
 
 
-def end_cache(end_ram):
-    split_end = []  # lista para guardar, respectivamente, a tag, a linha e o byte da memoria cache nos espaços 0, 1 e 2
-    controle = 2  # variável de controle para o loop for
+def end_cache(end_ram):  # o objetivo dessa função é receber um endereço da memória RAM e separar os devidos bits que
+    # vão endereçar a tag, a linha e o byte na memória cache em uma lista com três espaços
+    split_end = [end_ram[0:razao], end_ram[razao:2 * razao], end_ram[2 * razao:potencia]]
 
-    for index in range(0, len(end_ram), razao):  # loop for responsável por separar os conjuntos de
-        # bits que serão usados para a tag, a linha e o byte e colocar cada um em seu devido espaço na lista
-        # split_end. o raciocínio começa multiplicando o número de bits usados para endereçar a memória por uma razão
-        # 11/26, o resultado será o número de bits que serão usados para endereçar a tag e as linhas. o restante dos
-        # bits contidos na variavel end_ram serão os bits guardados na linha correspondente na memoria cache
-        split_end.append(end_ram[index: index + razao])
-        if controle == 3:  # if usado para determinar quando o loop for já tiver agrupado os bits da tag e das linhas,
-            # nesse caso ele irá agrupar o restante dos bits em seu próprio espaço da lista e sairá do loop
-            split_end.append(end_ram[index + razao: potencia])
-            break
-        controle += 1
     return split_end
 
 
@@ -101,14 +90,15 @@ memoria_cache = [memoria_cache]  # coloca essa linha dentro de uma lista
 for i in range(0, n_linha_cache - 1):  # loop for responsavel por adicionar a quantidade devida de linhas na cache
     memoria_cache += [[None] * n_coluna_cache]
 print(memoria_cache)
-old_cache = deepcopy(memoria_cache)  # cria um backup da memória cache
 
 bloco_backup = []  # essa lista armazenará os dados dos blocos (tag e linha) que foram modificados enquanto na
 # memória cache
 for i in range(0, n_linha_cache):  # transforma a lista em uma lista vazia com o número de termos sendo igual ao
     # número de linhas (vale destacar que o valor dentro de cada elemento da lista é a tag do bloco que foi
     # modificado e ele está na posição da linha que ele pertence na memória cache)
-    bloco_backup.append(None)
+    bloco_backup.append('3')
+
+print(bloco_backup)
 
 while True:
     celula_ram = input("Digite qual célula da RAM você trabalhará (em binário): ")
@@ -131,13 +121,13 @@ while True:
         # correspondente da cache
         print("Endereço não encontrado na memória cache!! Procurando na memória principal...")
 
-        if old_cache[linha] != memoria_cache[linha]:  # verifica se a memória cache é igual á cópia feita antes,
-            # assim ele vai determinar se houve ou não modificação no bloco que ele está operando. se houve,
-            # antes de sobrescrever ele vai atualizar todo o bloco na memória ram
+        if bloco_backup[linha] == memoria_cache[linha][0]:  # verifica na lista bloco_backup se o bloco em questão
+            # foi modificado
             print("Celula atualizada enquanto na memoria cache, atualizando na memória principal...")
             for i in range(1, n_coluna_cache):
                 ram[int(bintodec(bloco_backup[linha] + dectobin(linha, razao) + dectobin(i - 1, len(cache[2]))))] = memoria_cache[linha][i]
                 print("funcionou")
+            bloco_backup[linha] = '3'
 
         memoria_cache[linha][0] = cache[0]  # atualiza a tag na devida linha
         for i in range(1, n_coluna_cache):  # itera por todas colunas atualizando com o valor de todas as células
@@ -147,14 +137,14 @@ while True:
         print("Bloco da memória cache atualizada! O byte contido no endereço correspondente é: " + str(
             memoria_cache[linha][celula + 1]))
         print("Na memória principal: " + str(ram[bintodec(celula_ram)]))
-        # print(memoria_cache)
-        old_cache[linha] = deepcopy(memoria_cache[linha])  # ao final ele atualiza a linha correspondente ao backup da
-        # memória cache feita algumas linhas atrás
+
 
     operacao = input("Você quer fazer uma operação de escrita? ").upper()
 
     if operacao == "SIM":  # se o usuário responder que ele quer fazer uma operação de escrita, o programa vai
         # sobrescrever o byte no endereço da cache especificado
-        old_cache[linha] = deepcopy(memoria_cache[linha])  # atualiza o backup da memória cache
         memoria_cache[linha][celula+1] = dectobin(bintodec(input("Digite o byte para sobrescrever o conteúdo do endereço: ")), 8)  # sobrescreve o endereço na memória cache especificado
         bloco_backup[linha] = tag  # armazena o endereço do bloco que foi modificado
+
+    print(memoria_cache)
+    print(bloco_backup)
