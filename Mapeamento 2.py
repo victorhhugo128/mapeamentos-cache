@@ -48,7 +48,7 @@ parteletra = "None"  # define um valor default para caso não haja letra a ser c
 
 ram = input("Entre com o número de células da memória: ")
 
-for i in list(ram):  # condicional que vai isolar o número inserido e categorizar o múltiplo
+for i in list(ram):  # condicional que vai isolar os algarismos inseridos e categorizar o múltiplo
     if i in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]:
         partenumero.append(i)
     else:
@@ -67,10 +67,12 @@ for i in range(0, int(2 ** potencia)):  # esse laço for será responsável por 
     # número aleatório (número é dado em decimal e a função dectobin transforma o número em um binário de 8 bits)
     ram[i] = dectobin(random.randint(0, 255), 8)
 
-razao = int(potencia * (27/32))  # razão que será usada para dividir os bits na quantidade correta em tag, linha e
+razao = int(potencia * (27/32))  # razão que será usada para dividir os bits na quantidade correta em tag e
 # celula.
 
-def end_cache(end_ram):
+
+def end_cache(end_ram):  # o objetivo dessa função é receber um endereço da memória RAM e separar os devidos bits que
+    # vão endereçar a tag e o byte na memória cache em uma lista com dois espaços.
     split_end = [end_ram[0: razao], end_ram[razao: potencia]]
     return split_end
 
