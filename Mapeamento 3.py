@@ -67,11 +67,14 @@ for i in range(0, int(2 ** potencia)):  # esse laço for será responsável por 
     # número aleatório (número é dado em decimal e a função dectobin transforma o número em um binário de 8 bits)
     ram[i] = dectobin(random.randint(0, 255), 8)
 
-razao_bloco = int(potencia * (27 / 32))  # razão que será usada para dividir os bits na quantidade correta em tag, linha e
-# celula.
-razao_tag = int(razao_bloco * (7/8))
+razao_bloco = int(potencia * (27 / 32))  # essa razão será usada para delimitar quantos bits do endereço vão
+# endereçar os blocos da cache
+razao_tag = int(razao_bloco * (7/8))  # essa razão será usada para delimitar quantos bits serão usados para endereçar
+# a tag na memória cache
 
-def end_cache(end_ram):
+
+def end_cache(end_ram):  # o objetivo dessa função é receber um endereço da memória RAM e separar os devidos bits que
+    # vão endereçar a tag, o conjunto e o byte na memória cache
     split_end = [end_ram[0:razao_tag], end_ram[razao_tag: razao_bloco], end_ram[razao_bloco:potencia]]
     return split_end
 
@@ -82,15 +85,16 @@ print(end_memoria)
 n_linha_cache = 2 ** int(len((end_memoria[0] + end_memoria[1]))/2)  # calcula a quantidade de linhas da cache
 print(n_linha_cache)
 n_coluna_cache = 1 + 2 ** len(end_memoria[1])  # calcula a quantidade de colunas da cache
-n_conj_cache = 2 ** int(len(end_memoria[1]))
-# memoria_cache = [[None] * n_coluna_cache]  # cria a primeira linha da cache com o número devido de colunas
+n_conj_cache = 2 ** int(len(end_memoria[1]))  # calcula a quantidade de conjuntos da cache
 memoria_cache_conj = []
 memoria_cache = []  # coloca essa linha dentro de uma lista
 
 
 for i in range(0, n_linha_cache):  # loop for responsavel por criar a memória cache, já com a separação dos subconjuntos
-    memoria_cache += [[None] * n_coluna_cache]
-    if (i+1) % (n_linha_cache/n_conj_cache) == 0:
+    memoria_cache += [[None] * n_coluna_cache]  # cria uma linha da memoria cache com o devido número de colunas
+    if (i+1) % (n_linha_cache/n_conj_cache) == 0:  # se o  número de linhas na lista memoria_cache for igual ao
+        # número de linhas que cabem em um conjunto, o programa vai armazenar essa lista dentro da lista
+        # memoria_cache_conj e vai limpar a lista memoria_cache para que o processo se repita
         memoria_cache_conj.extend([memoria_cache])
         memoria_cache = []
 
@@ -98,7 +102,9 @@ for i in range(0, n_linha_cache):  # loop for responsavel por criar a memória c
 bloco_backup = []  # essa lista armazenará os dados dos blocos (tag e linha) que foram modificados enquanto na
 # memória cache
 bloco_backup_final = []
-for i in memoria_cache_conj:  # loop for responsavel por criar a memória cache, já com a separação dos subconjuntos
+for i in memoria_cache_conj:  # loop for responsavel por criar uma matrix para o programa lembrar qual linha foi
+    # modificada. a linha especificada dessa matriz funcionará como conjunto e a coluna especificada funcionará como
+    # linha da cache
     for j in i:
         bloco_backup.extend(['3'])
     bloco_backup_final.extend([bloco_backup])
@@ -134,17 +140,17 @@ while True:
             for i in range(1, n_coluna_cache):
                 ram[int(bintodec(bloco_backup_final[subconjunto][linha] + cache[1] + dectobin(i - 1, len(cache[2]))))] = memoria_cache_conj[subconjunto][linha][i]
                 print("funcionou")
-            bloco_backup_final[subconjunto][linha] = '3'
+            bloco_backup_final[subconjunto][linha] = '3'  # como o bloco já foi atualizado na memória ram, ele 'zera'
+            # o valor correspondente àquela linha no bloco_backup_final
 
         memoria_cache_conj[subconjunto][linha][0] = tag  # atualiza a tag na devida linha
-        for i in range(1, n_coluna_cache):  # itera por todas colunas atualizando com o valor de todas as células
+        for i in range(1, n_coluna_cache):  # itera por as todas colunas atualizando com o valor de todas as células
             # pertencentes a este bloco da ram
             print(dectobin(i - 1, len(cache[2])))
             memoria_cache_conj[subconjunto][linha][i] = ram[int(bintodec(tag + cache[1] + dectobin(i-1, len(cache[2]))))]
 
         print("Bloco da memória cache atualizada! O byte contido no endereço correspondente é: " + str(memoria_cache_conj[subconjunto][linha][celula + 1]))
         print("Na memória principal: " + str(ram[bintodec(celula_ram)]))
-        # print(memoria_cache)
 
         boole = False
 
@@ -153,7 +159,6 @@ while True:
     if operacao == "SIM":  # se o usuário responder que ele quer fazer uma operação de escrita, o programa vai
         # sobrescrever o byte no endereço da cache especificado
 
-        print(linha)
         memoria_cache_conj[subconjunto][linha][celula+1] = dectobin(bintodec(input("Digite o byte para sobrescrever o conteúdo do endereço: ")), 8)  # sobrescreve o endereço especificado na memória cache
         bloco_backup_final[subconjunto][linha] = tag  # armazena o endereço do bloco que foi modificado
 
